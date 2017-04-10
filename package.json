@@ -1,0 +1,17 @@
+{
+  "name": "shoio",
+  "version": "0.0.10",
+  "description": "Events oriented server framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "events"
+  ],
+  "author": "brendonferreira",
+  "license": "MIT",
+  "dependencies": {
+    "pug": "^2.0.0-beta11"
+  }
+}
