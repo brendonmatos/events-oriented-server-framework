@@ -2,7 +2,7 @@
 
 #### Example
 
-```
+```javascript
 
 // What if server was oriented to events
 const shoio = require('../index')
