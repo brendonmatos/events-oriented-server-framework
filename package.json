@@ -8,7 +8,9 @@
     "test": "mocha"
   },
   "keywords": [
-    "events"
+    "events",
+    "server",
+    "rest"
   ],
   "author": "brendonferreira",
   "license": "MIT",

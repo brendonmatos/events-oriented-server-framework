@@ -1,26 +1,33 @@
+Error.stackTraceLimit = Infinity;
+
 
 function events() {
+
     let listeners = []
     
     this.on = ( eventname, action ) => {
-        listeners[eventname] = action
-    }
-    
-    this.emit = (eventname, payload) => {
-        //console.log(payload)
-        if( listeners[eventname] ) {
-            listeners[eventname]( payload, this.emit )    
+        if( eventname && eventname != "undefined" ){
+            listeners[eventname] = action
         } else {
-            console.trace(`Listener is not defined to action '${eventname}'`)
+            console.trace('Can\'t register an listener with undefined name')
         }
     }
     
-    this.attachEvents  = (toAttachEvents) => {
-        listeners = Object.assign(listeners, toAttachEvents);
+    this.emit = (eventname, payload) => {
+        if( eventname && eventname != "undefined" ){
+            if( listeners[eventname]) {
+                listeners[eventname]( payload, this.emit )    
+            } else {
+                this.emit('error:undefinedListener')
+                console.log(`Listener is not defined to action '${eventname}'`)
+            }
+        } else {
+            console.trace('The emit function can\'t be undefined')
+        }
     }
 
-    this.listenerExists = (name) => {
-        return listeners.indexOf(name) >= 0 || listeners[name]
+    this.attachEvents  = (toAttachEvents) => {
+        listeners = Object.assign(listeners, toAttachEvents);
     }
     
     this.list = () => listeners
@@ -31,46 +38,42 @@ function events() {
 function App (config) {
 
     const app = new events()
-
-    app.requestEventName =  (
-        config ? ( typeof config == "string" )
-            ? config
-            : config.requestEventName
-        : "request"
-    );
-
+    
+    if( config ){
+        app.defaultEventName = config.otherwise || 'page-not-found'
+        app.requestListenerName = config.requestListenerName || 'request'
+    }
 
     app.actions = {
         response: 'response',
         responseEnd: 'response:end',
         responseSend: 'response:send',
         responseSendBuffer: 'response:sendBuffer',
-        responseSetHeader: 'response:setHeader'
+        responseSetHeader: 'response:setHeader',
+        undefinedListenerName: 'error:undefinedListener'
     }
-
     app.createServer = () => {
-        
+        let qweqwe = 1
         return require('http').createServer( (request, response) => {
-
             const onResponseSetHeader = (header) => {
-                console.log(header)
                 response.setHeader(header[0], header[1])
             }
-
             const onResponseEnd = (data, encoding) => {
                 response.end(data, encoding)
             }
-
             const onResponseBuffer = (buffer) => {
                 response.write( buffer )
             }
-
+            const onUndefinedListener = () => {
+                app.emit(app.defaultEventName, request)
+            }
             app.on(app.actions.response, onResponseEnd)
             app.on(app.actions.responseEnd, onResponseEnd)
             app.on(app.actions.responseSendBuffer, onResponseBuffer)
             app.on(app.actions.responseSetHeader, onResponseSetHeader)
-
-            app.emit(app.requestEventName, request) 
+            app.on(app.actions.undefinedListenerName, onUndefinedListener)
+            
+            app.emit(app.requestListenerName, request) 
         })
     }
 
